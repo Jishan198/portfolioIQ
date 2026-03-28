@@ -1,0 +1,51 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+    
+    <div class="text-center space-y-4">
+        <h1 class="text-5xl font-black text-white tracking-tighter">AI Risk <span class="text-gradient">Engine</span></h1>
+        <p class="text-gray-400 font-medium">Upload a broker screenshot or enter a ticker for an instant deep-dive.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="glass-card p-8 rounded-3xl space-y-4">
+            <h3 class="text-xl font-bold text-white">Stock Analysis</h3>
+            <input type="text" name="ticker" id="ticker-input" placeholder="e.g. RELIANCE" 
+                   class="w-full bg-black/40 border border-white/10 p-4 rounded-2xl text-white outline-none focus:border-blue-500 transition-all">
+            <button hx-post="/api/v1/trigger/" 
+                    hx-include="#ticker-input"
+                    hx-target="#result-area"
+                    hx-swap="innerHTML"
+                    hx-indicator="#loading-overlay"
+                    class="w-full bg-blue-600 hover:bg-blue-500 p-4 rounded-2xl font-bold transition-all shadow-lg shadow-blue-500/20">
+                Analyze Ticker
+            </button>
+        </div>
+
+        <div class="glass-card p-8 rounded-3xl space-y-4">
+            <h3 class="text-xl font-bold text-white">Portfolio Vision</h3>
+            <input type="file" name="file" id="screenshot-input"
+                   class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer">
+            <button hx-post="/api/v1/upload/"
+                    hx-encoding="multipart/form-data"
+                    hx-include="#screenshot-input"
+                    hx-target="#result-area"
+                    hx-swap="innerHTML"
+                    hx-indicator="#loading-overlay"
+                    class="w-full mt-4 bg-purple-600 hover:bg-purple-500 p-4 rounded-2xl font-bold transition-all shadow-lg shadow-purple-500/20">
+                Upload & Scan
+            </button>
+        </div>
+    </div>
+
+    <div id="result-area" class="mt-12"></div>
+
+    <div id="loading-overlay" class="htmx-indicator fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md" style="display:none;">
+        <div class="flex flex-col items-center">
+            <div class="relative w-24 h-24">
+                <div class="absolute inset-0 rounded-full border-4 border-blue-500/20"></div>
+                <div class="absolute inset-0 rounded-full border-4 border-blue-500 border-t-transparent animate-spin"></div>
+            </div>
+
+{% endblock %}

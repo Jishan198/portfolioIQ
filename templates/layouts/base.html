@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PortfolioIQ | AI Risk</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <style>
+    body {
+        background: radial-gradient(circle at top right, #1e293b, #0f172a);
+        background-attachment: fixed;
+    }
+    .glass {
+        background: rgba(31, 41, 55, 0.6);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    }
+    .glass-card {
+        background: rgba(31, 41, 55, 0.6);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    }
+    .nav-glass {
+        background: rgba(15, 23, 42, 0.8);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .text-gradient {
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    .htmx-indicator {
+        display: none;
+    }
+    .htmx-request .htmx-indicator,
+    .htmx-request.htmx-indicator {
+        display: flex;
+    }
+    </style>
+</head>
+<body class="bg-gray-900 text-white font-sans antialiased min-h-screen flex flex-col">
+
+    {% if user.is_authenticated %}
+    <nav class="bg-gray-800 border-b border-gray-700">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-8">
+                    <a href="{% url 'main_dashboard' %}" class="text-xl font-black text-blue-500 tracking-tight">PortfolioIQ</a>
+                    <div class="hidden md:block">
+                        <div class="flex items-baseline space-x-4">
+                            <a href="{% url 'main_dashboard' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">Dashboard</a>
+                            <a href="/api/v1/analysis/" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">Risk Analyser</a>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <span class="text-gray-400 text-sm mr-4">{{ user.email }}</span>
+                    <a href="{% url 'logout_view' %}" class="text-red-400 hover:text-red-300 text-sm font-bold transition-colors">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <main class="flex-grow p-8">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+</body>
+</html>

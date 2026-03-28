@@ -1,0 +1,120 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 pb-12" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+    
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-800 pb-6">
+        <div>
+            <h1 class="text-4xl font-black tracking-tight text-white">Portfolio <span class="text-gradient">Intelligence</span></h1>
+            <p class="text-gray-400 mt-1 font-medium">Monitoring your assets and market vulnerabilities.</p>
+        </div>
+        <a href="/api/v1/analysis/" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-2xl transition-all shadow-lg text-sm">
+            Run AI Risk Scan &rarr;
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="glass-card p-6 rounded-3xl flex flex-col items-center justify-center text-center">
+            <p class="text-gray-400 text-xs font-bold uppercase tracking-widest mb-4">Risk Exposure</p>
+            <div class="relative w-32 h-16 overflow-hidden">
+                <div class="absolute inset-0 w-32 h-32 border-[12px] border-gray-700 rounded-full"></div>
+                <div class="absolute inset-0 w-32 h-32 border-[12px] border-blue-500 rounded-full border-b-transparent border-l-transparent rotate-[45deg]"></div>
+            </div>
+            <p class="text-xl font-black text-white mt-2">Moderate</p>
+        </div>
+
+        <div class="glass-card p-6 rounded-3xl">
+            <p class="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Current Value</p>
+            <h3 class="text-3xl font-black text-white">₹{{ current_value }}</h3>
+        </div>
+
+        <div class="glass-card p-6 rounded-3xl">
+            <p class="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Total Invested</p>
+            <h3 class="text-3xl font-bold text-gray-300">₹{{ total_invested }}</h3>
+        </div>
+
+        <div class="glass-card p-6 rounded-3xl">
+            <p class="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Total P&L</p>
+            <h3 class="text-3xl font-bold {% if total_pl >= 0 %}text-green-500{% else %}text-red-500{% endif %}">
+                {% if total_pl > 0 %}+{% endif %}₹{{ total_pl }}
+            </h3>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2 glass-card rounded-3xl overflow-hidden">
+            <div class="px-8 py-6 border-b border-white/5 bg-white/5">
+                <h3 class="text-lg font-bold">Your Assets</h3>
+            </div>
+            <table class="w-full text-left">
+                <thead class="bg-black/20 text-gray-400 text-xs uppercase tracking-widest">
+                    <tr>
+                        <th class="px-8 py-4">Symbol</th>
+                        <th class="px-8 py-4 text-right">Qty</th>
+                        <th class="px-8 py-4 text-right">Avg Price</th>
+                        <th class="px-8 py-4 text-right">Total</th>
+                        <th class="px-8 py-4 text-right">Action</th>
+                    </tr>
+                </thead>
+                {% include 'partials/holdings_table.html' %}
+            </table>
+
+            <!-- Add Holding Form -->
+            <div class="px-8 py-6 border-t border-white/5 bg-white/5">
+                <h4 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Add Holding</h4>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <input type="text" name="ticker" id="holding-ticker" placeholder="Ticker e.g. TCS"
+                           class="bg-black/40 border border-white/10 p-3 rounded-xl text-white text-sm outline-none focus:border-blue-500 transition-all">
+                    <input type="number" name="quantity" id="holding-qty" placeholder="Quantity" step="0.01"
+                           class="bg-black/40 border border-white/10 p-3 rounded-xl text-white text-sm outline-none focus:border-blue-500 transition-all">
+                    <input type="number" name="buy_price" id="holding-price" placeholder="Buy Price ₹" step="0.01"
+                           class="bg-black/40 border border-white/10 p-3 rounded-xl text-white text-sm outline-none focus:border-blue-500 transition-all">
+                    <input type="date" name="buy_date" id="holding-date"
+                           class="bg-black/40 border border-white/10 p-3 rounded-xl text-white text-sm outline-none focus:border-blue-500 transition-all">
+                </div>
+                <button hx-post="/api/v1/holdings/add/"
+                        hx-include="#holding-ticker, #holding-qty, #holding-price, #holding-date"
+                        hx-target="#holdings-body"
+                        hx-swap="outerHTML"
+                        hx-on::after-request="document.querySelectorAll('#holding-ticker, #holding-qty, #holding-price, #holding-date').forEach(el => el.value = '')"
+                        class="mt-3 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-xl transition-all text-sm">
+                    + Add Holding
+                </button>
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <div class="glass-card p-8 rounded-3xl"><canvas id="allocationChart"></canvas></div>
+            <div class="glass-card p-6 rounded-3xl border-l-4 border-yellow-500">
+                <h4 class="text-xs font-black text-yellow-500 uppercase tracking-tighter mb-2">AI Risk Alert</h4>
+                <p class="text-sm text-gray-300">Your portfolio is highly concentrated. Diversify to lower volatility.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const ctx = document.getElementById('allocationChart');
+        if (!ctx) return;
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: [{% for h in holdings %}'{{ h.ticker }}',{% endfor %}],
+                datasets: [{
+                    data: [{% for h in holdings %}{{ h.quantity|default:0 }} * {{ h.buy_price|default:0 }},{% endfor %}],
+                    backgroundColor: ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                cutout: '80%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: '#9ca3af' }}
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

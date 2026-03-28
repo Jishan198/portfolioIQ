@@ -1,0 +1,21 @@
+<tbody class="divide-y divide-white/5" id="holdings-body">
+    {% for h in holdings %}
+    <tr class="hover:bg-white/5 transition-colors group">
+        <td class="px-8 py-5 font-bold text-blue-400">{{ h.ticker }}</td>
+        <td class="px-8 py-5 text-gray-300 text-right font-mono">{{ h.quantity }}</td>
+        <td class="px-8 py-5 text-gray-300 text-right font-mono">₹{{ h.buy_price }}</td>
+        <td class="px-8 py-5 text-white text-right font-bold">₹{% widthratio h.quantity 1 h.buy_price %}</td>
+        <td class="px-8 py-5 text-right">
+            <button hx-post="/api/v1/holdings/delete/{{ h.pk }}/"
+                    hx-target="#holdings-body"
+                    hx-swap="outerHTML"
+                    hx-confirm="Delete {{ h.ticker }}?"
+                    class="text-red-400 hover:text-red-300 text-xs font-bold transition-colors">
+                Remove
+            </button>
+        </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5" class="px-8 py-12 text-center text-gray-500">No holdings found. Add one below.</td></tr>
+    {% endfor %}
+</tbody>
