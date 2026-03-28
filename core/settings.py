@@ -13,11 +13,11 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import environ
 from pathlib import Path
 import dj_database_url # Add this import at the top of the file
-
+import dj_database_url
 # Replace your existing DATABASES dict with this:
 DATABASES = {
     'default': dj_database_url.config(
-        default=env('DATABASE_URL', default='sqlite:///db.sqlite3'),
+        default=environ.Env('DATABASE_URL', default='sqlite:///db.sqlite3'),
         conn_max_age=600
     )
 }
@@ -108,6 +108,7 @@ STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles' # Add this
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage' # Add this
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+CSRF_TRUSTED_ORIGINS = ['https://*.up.railway.app']
 
 # CRITICAL: Tell Django to use our custom user model
 AUTH_USER_MODEL = 'users.User'
